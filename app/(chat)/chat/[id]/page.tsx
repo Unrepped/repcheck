@@ -8,6 +8,7 @@ import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
 import type { DBMessage } from '@/lib/db/schema';
 import type { Attachment, UIMessage } from 'ai';
+import { INITIAL_MESSAGE } from '@/lib/ai/real-estate/prompts';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -51,6 +52,21 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     }));
   }
 
+  // If there are no messages, start with the real estate initial message
+  const initialUIMessages =
+    messagesFromDb.length === 0
+      ? [
+          {
+            id: 'initial-assistant',
+            role: 'assistant',
+            parts: [{ type: 'text', text: INITIAL_MESSAGE }],
+            content: INITIAL_MESSAGE,
+            createdAt: new Date(),
+            experimental_attachments: [],
+          } as UIMessage,
+        ]
+      : convertToUIMessages(messagesFromDb);
+
   const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get('chat-model');
 
@@ -59,7 +75,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <>
         <Chat
           id={chat.id}
-          initialMessages={convertToUIMessages(messagesFromDb)}
+          initialMessages={initialUIMessages}
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialVisibilityType={chat.visibility}
           isReadonly={session?.user?.id !== chat.userId}
@@ -75,7 +91,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     <>
       <Chat
         id={chat.id}
-        initialMessages={convertToUIMessages(messagesFromDb)}
+        initialMessages={initialUIMessages}
         initialChatModel={chatModelFromCookie.value}
         initialVisibilityType={chat.visibility}
         isReadonly={session?.user?.id !== chat.userId}

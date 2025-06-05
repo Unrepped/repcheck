@@ -19,24 +19,24 @@ function PureSuggestedActions({
 }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
+      title: "I'm buying my first home.",
+      label: 'What should I ask a real estate agent?',
+      action: "I'm buying my first home. What should I ask a real estate agent?",
     },
     {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
+      title: 'How do I know if an agent',
+      label: 'is a good fit for my needs?',
+      action: 'How do I know if an agent is a good fit for my needs?',
     },
     {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      title: 'What questions should I ask',
+      label: 'about the home buying process?',
+      action: 'What questions should I ask about the home buying process?',
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'How can I make sure',
+      label: 'I understand all the costs and fees?',
+      action: 'How can I make sure I understand all the costs and fees?',
     },
   ];
 

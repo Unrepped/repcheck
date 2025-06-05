@@ -36,6 +36,9 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import { getSystemPrompt } from '@/lib/ai/real-estate/prompts';
+import { updateUserContext, addQuestion, transitionPhase } from '@/lib/ai/real-estate/tools';
+import { type InterviewPhase, type UserContext } from '@/lib/ai/real-estate/types';
 
 export const maxDuration = 60;
 
@@ -144,25 +147,31 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // --- Real Estate Interview State Management ---
+    // For demo: initialize interview state (in production, persist/load from DB)
+    let interviewPhase: InterviewPhase = 'discovery';
+    let userContext: UserContext = {
+      isFirstTimeBuyer: false,
+      hasAgent: false,
+      supportNeeds: [],
+    };
+    // TODO: Load and persist interview state per chat/user as needed
+    // ----------------------------------------------
+
     const stream = createDataStream({
       execute: (dataStream) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          // Use the real estate system prompt
+          system: getSystemPrompt(interviewPhase, userContext),
           messages,
           maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_generateMessageId: generateUUID,
+          // Register real estate tools
           tools: {
+            updateUserContext,
+            addQuestion,
+            transitionPhase,
+            // Optionally, keep other tools if needed
             getWeather,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
@@ -171,61 +180,24 @@ export async function POST(request: Request) {
               dataStream,
             }),
           },
-          onFinish: async ({ response }) => {
-            if (session.user?.id) {
-              try {
-                const assistantId = getTrailingMessageId({
-                  messages: response.messages.filter(
-                    (message) => message.role === 'assistant',
-                  ),
-                });
-
-                if (!assistantId) {
-                  throw new Error('No assistant message found!');
-                }
-
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [message],
-                  responseMessages: response.messages,
-                });
-
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
-                });
-              } catch (_) {
-                console.error('Failed to save chat');
-              }
-            }
-          },
-          experimental_telemetry: {
-            isEnabled: isProductionEnvironment,
-            functionId: 'stream-text',
-          },
+          experimental_transform: smoothStream({ chunking: 'word' }),
+          experimental_generateMessageId: generateUUID,
+          // Optionally, handle tool outputs here (pseudo-code):
+          // onToolResult: (toolName, result) => {
+          //   if (toolName === 'updateUserContext') userContext = { ...userContext, ...result };
+          //   if (toolName === 'transitionPhase') interviewPhase = result.phase;
+          //   if (toolName === 'addQuestion') questions.push(result);
+          // },
         });
-
         result.consumeStream();
-
         result.mergeIntoDataStream(dataStream, {
           sendReasoning: true,
         });
       },
-      onError: () => {
-        return 'Oops, an error occurred!';
-      },
     });
 
+    // Use resumable stream context if available, else return Response(stream)
     const streamContext = getStreamContext();
-
     if (streamContext) {
       return new Response(
         await streamContext.resumableStream(streamId, () => stream),
@@ -234,9 +206,7 @@ export async function POST(request: Request) {
       return new Response(stream);
     }
   } catch (error) {
-    if (error instanceof ChatSDKError) {
-      return error.toResponse();
-    }
+    return new ChatSDKError('bad_request:api').toResponse();
   }
 }
 
