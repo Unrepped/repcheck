@@ -1,0 +1,82 @@
+{
+    "structure": {
+        "app": {
+            "chat": {
+                "required": [
+                    "page.tsx",
+                    "layout.tsx",
+                    "loading.tsx",
+                    "error.tsx"
+                ],
+                "components": {
+                    "required": [
+                        "ChatContainer.tsx",
+                        "MessageList.tsx",
+                        "InputBox.tsx",
+                        "PhaseIndicator.tsx"
+                    ],
+                    "optional": [
+                        "QuestionList.tsx",
+                        "ExportButton.tsx"
+                    ]
+                }
+            },
+            "api": {
+                "ai": {
+                    "required": [
+                        "route.ts"
+                    ]
+                }
+            }
+        },
+        "lib": {
+            "required": [
+                "agentConfig.ts",
+                "types.ts",
+                "utils.ts"
+            ],
+            "ai": {
+                "required": [
+                    "prompts.ts",
+                    "phases.ts",
+                    "categories.ts"
+                ]
+            }
+        },
+        "types": {
+            "required": [
+                "chat.ts",
+                "agent.ts",
+                "phases.ts"
+            ]
+        },
+        "styles": {
+            "required": [
+                "globals.css"
+            ]
+        }
+    },
+    "naming": {
+        "files": {
+            "components": "PascalCase.tsx",
+            "pages": "page.tsx",
+            "layouts": "layout.tsx",
+            "types": "camelCase.ts",
+            "utils": "camelCase.ts"
+        },
+        "directories": {
+            "components": "components",
+            "lib": "lib",
+            "types": "types",
+            "styles": "styles"
+        }
+    },
+    "imports": {
+        "aliases": {
+            "@/*": "./src/*",
+            "@components/*": "./src/components/*",
+            "@lib/*": "./src/lib/*",
+            "@types/*": "./src/types/*"
+        }
+    }
+}

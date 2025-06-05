@@ -1,0 +1,91 @@
+{
+    "project": {
+        "name": "AI Real Estate Agent Interview Generator",
+        "type": "nextjs-ai-chatbot",
+        "version": "1.0.0"
+    },
+    "rules": {
+        "architecture": {
+            "frontend": "nextjs-app-router",
+            "chat": "vercel-ai-sdk-v5",
+            "llm": "openai-gpt4o",
+            "agent": "multi-phase-conversational"
+        },
+        "formatting": {
+            "indentSize": 2,
+            "useTabs": false,
+            "maxLineLength": 100,
+            "quoteStyle": "single"
+        },
+        "typescript": {
+            "strict": true,
+            "noImplicitAny": true,
+            "strictNullChecks": true,
+            "noUnusedLocals": true,
+            "noUnusedParameters": true
+        },
+        "react": {
+            "componentNaming": "PascalCase",
+            "hookNaming": "camelCase",
+            "propsInterfaceNaming": "PascalCase",
+            "eventHandlerNaming": "handleEventName"
+        },
+        "imports": {
+            "order": [
+                "react",
+                "next",
+                "ai-sdk",
+                "external",
+                "internal",
+                "components",
+                "lib",
+                "types"
+            ],
+            "newlineBetweenGroups": true
+        },
+        "naming": {
+            "components": "PascalCase",
+            "functions": "camelCase",
+            "variables": "camelCase",
+            "constants": "UPPER_SNAKE_CASE",
+            "interfaces": "PascalCase",
+            "types": "PascalCase",
+            "phases": "PhaseOne, PhaseTwo",
+            "categories": "AgentRelationship, LocalKnowledge"
+        },
+        "comments": {
+            "requireJSDoc": true,
+            "requireComponentProps": true,
+            "requireFunctionParams": true,
+            "requirePhaseDocumentation": true
+        },
+        "accessibility": {
+            "requireAltText": true,
+            "requireAriaLabels": true,
+            "requireKeyboardNavigation": true,
+            "requireChatAccessibility": true
+        },
+        "testing": {
+            "requireTestFiles": true,
+            "testNaming": "*.test.ts",
+            "coverageThreshold": 80,
+            "requirePhaseTests": true,
+            "requireIntegrationTests": true
+        },
+        "git": {
+            "commitMessageFormat": "type(scope): message",
+            "branchNaming": "type/description",
+            "requirePullRequest": true
+        }
+    },
+    "ignore": [
+        "node_modules",
+        ".next",
+        "out",
+        "build",
+        "dist",
+        "coverage",
+        "*.test.ts",
+        "*.test.tsx"
+    ]
+}

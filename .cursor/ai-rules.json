@@ -1,0 +1,96 @@
+{
+    "ai": {
+        "phases": {
+            "phase1": {
+                "name": "Situation Discovery",
+                "goal": "Understand user's context",
+                "requiredQuestions": [
+                    "agent_status",
+                    "first_time_buyer",
+                    "support_needs"
+                ],
+                "responseFormat": "open_ended"
+            },
+            "phase2": {
+                "name": "Diagnostic Questioning",
+                "categories": [
+                    "agent_relationship",
+                    "local_knowledge",
+                    "process_familiarity",
+                    "communication_availability",
+                    "budget_fees",
+                    "loan_eligibility",
+                    "property_type",
+                    "lifestyle_cultural_fit"
+                ],
+                "responseFormat": "structured"
+            }
+        },
+        "prompts": {
+            "systemPrompt": {
+                "required": true,
+                "format": "markdown",
+                "sections": [
+                    "role_definition",
+                    "phase_instructions",
+                    "response_format"
+                ]
+            },
+            "userPrompts": {
+                "maxLength": 500,
+                "requireContext": true
+            }
+        },
+        "responses": {
+            "format": "markdown",
+            "requiredSections": [
+                "questions",
+                "explanations",
+                "next_steps"
+            ],
+            "maxLength": 2000
+        },
+        "context": {
+            "maxHistory": 10,
+            "requiredFields": [
+                "phase",
+                "category",
+                "userContext"
+            ]
+        }
+    },
+    "chat": {
+        "ui": {
+            "components": {
+                "required": [
+                    "ChatContainer",
+                    "MessageList",
+                    "InputBox",
+                    "PhaseIndicator"
+                ],
+                "optional": [
+                    "QuestionList",
+                    "ExportButton"
+                ]
+            },
+            "accessibility": {
+                "required": [
+                    "aria-live",
+                    "keyboard_navigation",
+                    "focus_management"
+                ]
+            }
+        },
+        "state": {
+            "required": [
+                "currentPhase",
+                "userContext",
+                "questionHistory"
+            ],
+            "persistence": {
+                "method": "localStorage",
+                "maxAge": "24h"
+            }
+        }
+    }
+}
