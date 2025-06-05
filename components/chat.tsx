@@ -224,35 +224,38 @@ export function Chat({
     }
   };
 
-  // Parse suggestions from the latest assistant message
-  const getSuggestions = (): string[] => {
-    const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant');
-    if (!lastAssistant || !Array.isArray(lastAssistant.parts)) return [];
-    for (const part of lastAssistant.parts) {
-      if (part && part.type === 'text' && typeof part.text === 'string') {
-        // Extract the first JSON array after 'Suggestions:' even if more text follows
-        const match = part.text.match(/Suggestions:\s*(\[[^\]]*\])/s);
-        if (match) {
-          let jsonStr = match[1];
-          if (jsonStr.includes("'")) {
-            jsonStr = jsonStr.replace(/'/g, '"');
-          }
+  // Extract suggestions from the latest assistant message (code block labeled suggestedResponses)
+  const latestAssistant = messages.slice().reverse().find((m) => m.role === 'assistant');
+  let suggestedResponses: string[] = [];
+  if (latestAssistant && Array.isArray(latestAssistant.parts)) {
+    for (const part of latestAssistant.parts) {
+      // Check for code block labeled suggestedResponses
+      if (
+        part &&
+        typeof part === 'object' &&
+        'type' in part &&
+        part.type === 'text' &&
+        typeof part.text === 'string'
+      ) {
+        const codeBlockMatch = part.text.match(/```suggestedResponses\s*([\s\S]*?)```/);
+        if (codeBlockMatch) {
           try {
-            const arr = JSON.parse(jsonStr);
-            if (Array.isArray(arr) && arr.every((s) => typeof s === 'string')) {
-              return arr;
+            const arr = JSON.parse(codeBlockMatch[1].trim());
+            if (Array.isArray(arr)) {
+              suggestedResponses = arr;
+              break;
             }
           } catch (e) {
-            console.warn('Failed to parse suggestions:', jsonStr, e);
+            // Ignore parse errors
           }
         }
       }
     }
-    return [];
-  };
+  }
 
-  const handleSuggestionSelect = (suggestion: string) => {
-    append({ role: 'user', content: suggestion });
+  // Handler for clicking a suggested response
+  const handleSelectSuggestion = (text: string) => {
+    append({ role: 'user', content: text });
   };
 
   return (
@@ -298,8 +301,8 @@ export function Chat({
                 isArtifactVisible={isArtifactVisible}
               />
 
-              <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl flex-col">
-                <SuggestedResponses suggestions={getSuggestions()} onSelect={handleSuggestionSelect} />
+              <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl flex-col items-center">
+                <SuggestedResponses suggestions={suggestedResponses} onSelect={handleSelectSuggestion} />
                 {!isReadonly && (
                   <MultimodalInput
                     chatId={id}
